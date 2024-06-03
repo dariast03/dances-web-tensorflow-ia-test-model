@@ -11,7 +11,6 @@ export default defineConfig({
     host: true,
 
   },
-  base: '/ia',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

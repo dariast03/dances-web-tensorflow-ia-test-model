@@ -37,7 +37,6 @@ function App() {
 
   useEffect(() => {
     deviceService.getByIdRealtime('4EuSOQMKWzbFhNeZQ17h', (x) => {
-      console.log("🚀 ~ deviceService.getByIdRealtime ~ x:", x)
       setfakeData(x)
     })
   }, [])

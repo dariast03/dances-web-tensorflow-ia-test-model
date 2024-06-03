@@ -18,9 +18,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           element: <HackMode />,
         }
 
-      ], {
-        basename: "/ia"
-      })}
+      ],
+        /*     {
+             basename: "/ia"
+           } */
+      )}
     />
   </React.StrictMode>,
 )
