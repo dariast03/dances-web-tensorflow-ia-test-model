@@ -1,0 +1,29 @@
+#root {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-image: url('https://buenosaires.gob.ar/sites/default/files/inline-images/DSC_0363.jpg');
+          /* Imagen representativa de las danzas de Bolivia */
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-repeat: no-repeat;
+
+
+          min-height: 100vh;
+}
+
+/* Capa de superposición */
+#root::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, .4);
+          /* Ajusta el valor de opacidad según sea necesario */
+          z-index: 0;
+          height: 100%;
+          /* Asegura que esté detrás del contenido del body */
+}

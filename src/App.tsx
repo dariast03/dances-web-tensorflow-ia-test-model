@@ -1,12 +1,14 @@
 import 'rmc-tabs/assets/index.css'
-import './App.css'
+import './main.css'
 import { useEffect, useState } from 'react'
 import * as tf from '@tensorflow/tfjs'
 import { labels } from './data/labels'
 import { Tabs } from 'rmc-tabs'
 import ImageMode from './components/image-mode'
 import CameraMode from './components/camera-mode'
-
+import HackMode from './components/hack-mode'
+import deviceService from './services/device-service'
+import { Toaster } from "@/components/ui/sonner"
 //type Prediction = tf.Tensor<tf.Rank> | tf.Tensor<tf.Rank>[] | null
 
 function App() {
@@ -14,72 +16,30 @@ function App() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [viewMode, setViewMode] = useState<string>('t1')
   const [model, setModel] = useState<tf.LayersModel | null>(null)
+  const [selectedModel, setSelectedModel] = useState<"model" | "model-old" | "model-old-2">("model")
   const [prediction, setPrediction] = useState<any>(null);
+  const [fakeData, setfakeData] = useState<any>(null);
+
+
   /* load mdel from assets/model */
-  const loadModel = async () => {
-    const model = await tf.loadLayersModel('assets/model/model.json')
+  const loadModel = async (modelName: "model" | "model-old" | "model-old-2" = "model") => {
+    const model = await tf.loadLayersModel(`ia/assets/${modelName}/model.json`)
     setModel(model)
-  }
-
-
-  const handleImageUpload = async () => {
-    if (!selectedImage) return alert('No has seleccionado ninguna imagen')
-    if (!model) return alert('No has cargado el modelo')
-
-    const imageElement = document.createElement('img');
-    imageElement.src = URL.createObjectURL(selectedImage);
-    await new Promise(resolve => {
-      imageElement.onload = resolve;
-    });
-    // Carga la imagen en un tensor
-    let image = await tf.browser.fromPixelsAsync(imageElement);
-    image = tf.image.resizeBilinear(image, [128, 128]);
-    image = image.expandDims(0)
-    // Carga tu modelo
-    //   const model = await tf.loadLayersModel('ruta/a/tu/modelo.json');
-
-    // Haz la predicción
-    const prediction = model.predict(image) as unknown as any;
-
-    const predictionArray = prediction.dataSync();
-
-    // Obtén los índices ordenados de mayor a menor según la predicción
-    //@ts-expect-error xdaw
-    const sortedIndices = Array.from(predictionArray.keys()).sort((a, b) => predictionArray[b] - predictionArray[a]);
-
-    // Extrae las tres predicciones más altas
-    const top3 = sortedIndices.slice(0, 3).map(i => ({
-      //@ts-expect-error xdaw
-      label: labels[i],
-      //@ts-expect-error xdaw
-      probability: predictionArray[i]
-    }));
-
-    // Muestra las tres predicciones con sus porcentajes de certeza
-    top3.forEach((prediction, index) => {
-      console.log(`Predicción ${index + 1}: ${prediction.label} - ${(prediction.probability * 100).toFixed(2)}%`);
-    });
-
-
-    //console.log(prediction.);
-    //prediction.print()
-    //console.log("🚀 ~ handleImageUpload ~ prediction:",prediction.as1D().argMax().print())
-
-    const idLabel = prediction.as1D().argMax().dataSync()[0] as unknown as number;
-
-    // Aquí puedes procesar la predicción como quieras
-    setPrediction(labels[idLabel]);
-  };
-
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return
-    setSelectedImage(e.target.files[0])
+    setSelectedModel(modelName)
   }
 
 
   useEffect(() => {
     loadModel()
+  }, [])
+
+
+
+  useEffect(() => {
+    deviceService.getByIdRealtime('4EuSOQMKWzbFhNeZQ17h', (x) => {
+      console.log("🚀 ~ deviceService.getByIdRealtime ~ x:", x)
+      setfakeData(x)
+    })
   }, [])
 
   return (
@@ -90,24 +50,46 @@ function App() {
       {prediction && <p>La imagen de baile pertenece a la categoría: {prediction}</p>}
     </div> */
 
-    /* @ts-expect-error xddd */
-    <Tabs
-      tabs={[
-        { key: 't1', title: 'Imagen', },
-        { key: 't2', title: 'Camara' },
-      ]}
-      initalPage={'t1'}
-      tabBarBackgroundColor='white'
-      onTabClick={(tab) => setViewMode(tab.key ?? "")}
+    <div>
+      {/* @ts-expect-error xddd  */}
+      <Tabs
+        tabs={[
+          { key: 't1', title: 'Imagen', },
+          { key: 't2', title: 'Camara' },
 
-    >
-      <div key="t1">
-        {viewMode === 't1' && (<ImageMode model={model} />)}
+        ]}
+        initalPage={'t1'}
+        tabBarBackgroundColor='white'
+        onTabClick={(tab) => setViewMode(tab.key ?? "")}
+
+      >
+        <div key="t1">
+          {viewMode === 't1' && (<ImageMode model={model} fakeData={fakeData} />)}
+        </div>
+        <div key="t2">
+          {viewMode === 't2' && (<CameraMode model={model} fakeData={fakeData} />)}
+        </div>
+      </Tabs>
+
+      {/* FLOA BUTTON WITH BOOSTRAP ON RIGT SCREEN */}
+      <div className="fixed-bottom">
+        <button className="" onClick={() => {
+          if (selectedModel === "model") {
+            loadModel("model-old")
+          }
+          else if (selectedModel === "model-old") {
+            loadModel("model-old-2")
+          } else if (selectedModel === "model-old-2") {
+            loadModel("model")
+          }
+        }}>
+          {selectedModel}
+        </button>
+
       </div>
-      <div key="t2">
-        {viewMode === 't2' && (<CameraMode model={model} />)}
-      </div>
-    </Tabs>
+
+      <Toaster />
+    </div>
   )
 }
 
