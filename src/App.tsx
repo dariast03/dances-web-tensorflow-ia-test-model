@@ -23,7 +23,7 @@ function App() {
 
   /* load mdel from assets/model */
   const loadModel = async (modelName: "model" | "model-old" | "model-old-2" = "model") => {
-    const model = await tf.loadLayersModel(`ia/assets/${modelName}/model.json`)
+    const model = await tf.loadLayersModel(`assets/${modelName}/model.json`)
     setModel(model)
     setSelectedModel(modelName)
   }
